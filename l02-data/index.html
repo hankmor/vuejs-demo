@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<div id="app">
+			{{message}}, this is {{name}}
+		</div>
+
+		<!-- v-bind -->
+		<div id="app2" v-bind:title="message">鼠标悬停几秒钟查看此处动态绑定的提示信息</div>
+
+		<!-- v-if -->
+		<div id="app3">
+			<p v-if="show">你可以看到我了</p>
+		</div>
+
+		<!-- v-for -->
+		<div id="app4">
+			<ol>
+				<li v-for="todo in todos">
+					{{ todo.text }}
+				</li>
+			</ol>
+		</div>
+
+		<!-- v-on -->
+		<div id="app5">
+			<p>{{message}}</p>
+			<button v-on:click="revertMessage">反转内容</button>
+		</div>
+
+		<!-- v-model -->
+		<div id="app6">
+			<p>{{message}}</p>
+			<input v-model="message" />
+		</div>
+
+		<div id="app7">
+			<p>{{message}}</p>
+			<!-- 只读属性异常 -->
+			<button v-on:click="message = 'hello, changed'">Change it</button>
+		</div>
+
+		<div id="app8">
+			<p>{{message}}</p>
+			<button v-on:click="message = 'hello, changed'">Change it</button>
+		</div>
+
+		<script src="../vue.js"></script>
+		<script type="text/javascript">
+			var data = {
+				message: 'Hello world',
+				name: 'KARL!'
+			};
+			var app = new Vue({
+				el: '#app',
+				data: data
+			});
+			data.name = 'belonk';
+
+			var app2 = new Vue({
+				el: '#app2',
+				data: {
+					message: '页面加载时间：' + new Date().toLocaleString()
+				}
+			});
+
+			var app3 = new Vue({
+				el: '#app3',
+				data: {
+					show: false
+				}
+			})
+			window.setTimeout(function() {
+				app3.show = true;
+			}, 2000);
+
+			var app4 = new Vue({
+				el: '#app4',
+				data: {
+					todos: [{
+							text: '学习Java'
+						},
+						{
+							text: '学习书法'
+						},
+						{
+							text: '学习Vue'
+						}
+					]
+				}
+			})
+			window.setTimeout(function() {
+				app4.todos.push({
+					text: '旅游一下'
+				});
+			}, 2000);
+
+			var app5 = new Vue({
+				el: '#app5',
+				data: {
+					message: 'hello vue.js!'
+				},
+				methods: {
+					revertMessage: function() {
+						this.message = this.message.split('').reverse().join('')
+					}
+				}
+			});
+
+			var app6 = new Vue({
+				el: '#app6',
+				data: {
+					message: 'hello vue.js'
+				}
+			})
+
+			var obj = {
+				message: 'hello vue.js'
+			};
+			// 冻结, 注意是在创建vue对象之前冻结
+			Object.freeze(obj);
+			var app7 = new Vue({
+				el: '#app7',
+				data: obj
+			})
+			// 更改无效
+			window.setTimeout(function() {
+				obj.message = 'hello Belonk!';
+				console.log(obj);
+			}, 2000);
+
+			var obj1 = {
+				message: 'hello vue.js'
+			};
+			var app8 = new Vue({
+				el: '#app8',
+				data: obj1
+			})
+			app8.$watch('message', function(newValue, oldValue) {
+				console.log('Message changed from [' + oldValue + '] to [' + newValue + ']');
+			});
+		</script>
+	</body>
+</html>

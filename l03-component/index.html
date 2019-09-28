@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<div id="app">
+			<!-- 使用v-for循环 -->
+			<ol>
+				<li v-for="item in list">
+					{{item.id}} - {{item.text}}
+				</li>
+			</ol>
+			<hr>
+			<!-- 使用组件 -->
+			<ol>
+				<!--
+				  现在我们为每个 language-list 提供 lang 对象(v-bind:lang)
+				  lang 对象是变量，即其内容可以是动态的。
+				  我们也需要为每个组件提供一个“key”
+				-->
+				<language-list v-for="item in list" v-bind:lang="item" v-bind:key="item.id">
+				</language-list>
+			</ol>
+		</div>
+		<script src="../vue.js"></script>
+		<script type="text/javascript">
+			Vue.component('language-list', {
+				// language-list 组件现在接受一个
+				// "prop"，类似于一个自定义特性。
+				// 这个 prop 名为 lang。
+				props: ['lang'],
+				template: '<li>{{lang.id}} - {{lang.text}}</li>'
+			});
+			var app = new Vue({
+				el: '#app',
+				data: {
+					list: [{
+							id: 0,
+							text: 'java'
+						},
+						{
+							id: 1,
+							text: 'python'
+						},
+						{
+							id: 2,
+							text: 'go'
+						}
+					]
+				}
+			});
+		</script>
+	</body>
+</html>
