@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<body>
+<fieldset>
+    <legend>hello world</legend>
+    <div id="app">
+        {{message}}, this is {{name}}
+    </div>
+</fieldset>
+
+<!-- v-bind：绑定属性 -->
+<fieldset>
+    <legend>v-bind</legend>
+    <div id="app2" v-bind:title="message">鼠标悬停几秒钟查看此处动态绑定的提示信息</div>
+</fieldset>
+
+<!-- v-if：条件渲染 -->
+<fieldset>
+    <legend>v-if</legend>
+    <div id="app3">
+        <p v-if="show">你可以看到我了</p>
+    </div>
+</fieldset>
+
+<!-- v-for：循环遍历 -->
+<fieldset>
+    <legend>v-for</legend>
+    <div id="app4">
+        <ol>
+            <li v-for="todo in todos">
+                {{ todo.text }}
+            </li>
+        </ol>
+    </div>
+</fieldset>
+
+<!-- v-on：添加事件监听 -->
+<fieldset>
+    <legend>v-on</legend>
+    <div id="app5">
+        <p>{{message}}</p>
+        <button v-on:click="revertMessage">反转内容</button>
+    </div>
+</fieldset>
+
+<!-- v-model： -->
+<fieldset>
+    <legend>v-model</legend>
+    <div id="app6">
+        <p>{{message}}</p>
+        <input v-model="message"/>
+    </div>
+</fieldset>
+
+<!-- 只读属性异常 -->
+<fieldset>
+    <legend>Object.freeze</legend>
+    <div id="app7">
+        <p>{{message}}</p>
+        <button v-on:click="message = 'hello, changed'">Change it</button>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Vue properties and methods</legend>
+    <div id="app8">
+        <p>{{message}}</p>
+        <button v-on:click="message = 'hello, changed'">Change it</button>
+    </div>
+</fieldset>
+
+<!-- v-once: 执行一次，当数据改变时，插值处的内容不会更新 -->
+<fieldset>
+    <legend>v-once</legend>
+    <div id="app9">
+        <span v-once>这个将不会改变: {{ msg }}</span>
+        <button v-on:click="msg += 'world!'">改值</button>
+    </div>
+</fieldset>
+
+<script src="../vue.js"></script>
+<script type="text/javascript">
+    var data = {
+        message: 'Hello world',
+        name: 'KARL!'
+    };
+    // Vue将数据和dom元素绑定，响应式交互，而不是直接操作dom
+    var app = new Vue({
+        el: '#app',
+        data: data
+    });
+    data.name = 'belonk';
+
+    /*========= 指令: 指令带有前缀 v-，以表示它们是 Vue 提供的特殊 attribute =========*/
+
+    // v-bind: 绑定html元素属性
+    var app2 = new Vue({
+        el: '#app2',
+        data: {
+            message: '页面加载时间：' + new Date().toLocaleString()
+        }
+    });
+
+    // v-if: 条件为true则渲染，否则不渲染
+    var app3 = new Vue({
+        el: '#app3',
+        data: {
+            show: false
+        }
+    })
+    window.setTimeout(function () {
+        app3.show = true;
+    }, 2000);
+
+    // v-for: 循环遍历数据
+    var app4 = new Vue({
+        el: '#app4',
+        data: {
+            todos: [{
+                text: '学习Java'
+            },
+                {
+                    text: '学习书法'
+                },
+                {
+                    text: '学习Vue'
+                }
+            ]
+        }
+    })
+    window.setTimeout(function () {
+        app4.todos.push({
+            text: '旅游一下'
+        });
+    }, 2000);
+
+    // v-on: 添加事件监听器
+    var app5 = new Vue({
+        el: '#app5',
+        data: {
+            message: 'hello vue.js!'
+        },
+        methods: {
+            revertMessage: function () {
+                this.message = this.message.split('').reverse().join('')
+            }
+        }
+    });
+
+    var app6 = new Vue({
+        el: '#app6',
+        data: {
+            message: 'hello vue.js'
+        }
+    })
+
+    var obj = {
+        message: 'hello vue.js'
+    };
+    // 冻结, 注意是在创建vue对象之前冻结
+    Object.freeze(obj);
+    var app7 = new Vue({
+        el: '#app7',
+        data: obj
+    })
+    // 更改无效
+    window.setTimeout(function () {
+        obj.message = 'hello Belonk!';
+        console.log(obj);
+    }, 2000);
+
+    var obj1 = {
+        message: 'hello vue.js'
+    };
+    var app8 = new Vue({
+        el: '#app8',
+        data: obj1
+    })
+    // vue暴露的实例property和方法，都带有$前缀，与自定义属性和方法区分开
+    console.log(app8.$data === obj1);
+    console.log(app8.$el === document.getElementById('app8'));
+    // 监听message变量值的变化，改变了则回调
+    app8.$watch('message', function (newValue, oldValue) {
+        console.log('Message changed from [' + oldValue + '] to [' + newValue + ']');
+    });
+
+    var app9 = new Vue({
+        el: "#app9",
+        data: {
+            msg: "hello"
+        }
+    });
+</script>
+</body>
+</html>
