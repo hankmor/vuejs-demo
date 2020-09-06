@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<body>
+<!-- v-once: 值只改变一次 -->
+<fieldset>
+    <legend>v-once</legend>
+    <div id="app">
+        <span v-once>{{message}}</span>
+        <!-- dont work -->
+        <button v-on:click="message = 'hello Belonk!'">Change it</button>
+    </div>
+</fieldset>
+
+<!-- v-html: 输出html，如果是{{html}}格式，会将html当做文本输出 -->
+<fieldset>
+    <legend>v-html</legend>
+    <div id="app1">
+        <p>Using mustaches: {{ rawHtml }}</p>
+        <p>Using v-html directive: <span v-html="rawHtml"></span></p>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>attribute</legend>
+    <div id="app2">
+        <!--不支持mustaches语法，必须使用v-bind指令-->
+        <!--<p id="{{dynamicId}}"></p>-->
+        <div v-bind:id="dynamicId">{{dynamicId}}</div>
+        <button v-bind:disabled="isButtonDisabled" v-on:click="dynamicId=Math.random()">Button</button>
+    </div>
+</fieldset>
+
+<script src="../vue.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'hello vue!'
+        }
+    })
+
+    var app1 = new Vue({
+        el: '#app1',
+        data: {
+            // 尽量避免动态渲染HTML，容易导致xss攻击
+            rawHtml: '<span style="color: red">This should be red.</span>'
+        }
+    })
+
+    let app2 = new Vue({
+        el: '#app2',
+        data: {
+            dynamicId: Math.random(),
+            isButtonDisabled: null
+        }
+    });
+</script>
+</body>
+</html>
