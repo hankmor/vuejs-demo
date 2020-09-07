@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+        a {
+            color: blue;
+            text-decoration: underline;
+        }
+
+        .for-scroll {
+            height: 80px;
+            width: 200px;
+            border: 1px solid #cccccc;
+            overflow: scroll;
+        }
+    </style>
+</head>
+<body>
+<!--v-on指令：监听dom事件-->
+<fieldset>
+    <legend>监听事件</legend>
+    <div id="app">
+        <!--v-on中直接计算counter的值-->
+        <button v-on:click="count += 1">Add 1</button>
+        <p>The button above has been clicked {{ count }} times.</p>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>事件处理方法</legend>
+    <div id="app2">
+        <!-- `greet` 是在下面定义的方法名 -->
+        <button v-on:click="greet">Greet</button>
+        <button v-on:click="greetByObject">Greet by vue instance</button>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>内联处理器中的方法</legend>
+    <div id="app3">
+        <!--内联访问事件方法-->
+        <button v-on:click="say('hi')">Say hi</button>
+        <button v-on:click="say('what')">Say what</button>
+        <!--内联访问原生event对象，使用特殊变量$event传入-->
+        <button v-on:click="warn('Form cannot be submitted yet.', $event)">warn</button>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>事件修饰符</legend>
+    <!--在事件处理程序中调用 event.preventDefault() 或 event.stopPropagation() 是非常常见的需求。尽管我们可以在方法中轻松实现这点，
+    但更好的方式是：方法只有纯粹的数据逻辑，而不是去处理 DOM 事件细节。
+    Vue.js为v-on提供了事件修饰符，来处理事件的一些行为：
+    .stop：阻止事件继续传播
+    .prevent：阻止默认行为
+    .capture：使用事件捕获模式，即内部元素触发的事件先在此处理，然后才交由内部元素进行处理
+    .self：只当在 event.target 是当前元素自身时触发处理函数，即事件不是从内部元素触发的
+    .once：事件将只会触发一次
+    .passive：滚动事件的默认行为 (即滚动行为) 将会立即触发，而不会等待 `onScroll` 完成，这其中包含 `event.preventDefault()` 的情况
+    -->
+    <div id="app4">
+        <div>
+            <label>click: </label>
+            <a v-on:click="link">go to https://belonk.com</a>
+        </div>
+        <div>
+            <!-- 阻止单击事件继续传播 -->
+            <label>click.stop: </label>
+            <a v-on:click.stop="link">go to https://belonk.com</a>
+        </div>
+        <div>
+            <label>click.stop.prevent: </label>
+            <!-- 修饰符可以串联 -->
+            <a v-on:click.stop.prevent="link">go to
+                https://belonk.com</a>
+        </div>
+        <div>
+            <form v-on:submit="onSubmit" action="https://belonk.com">
+                <button type="submit">submit form</button>
+            </form>
+
+            <!-- 提交事件不再重载页面 -->
+            <form v-on:submit.prevent="onSubmit" action="https://belonk.com">
+                <button type="submit">submit form1</button>
+            </form>
+
+            <!-- 只有修饰符 -->
+            <form v-on:submit.prevent action="https://belonk.com">
+                <button type="submit">submit form2</button>
+            </form>
+        </div>
+
+        <!--
+        添加事件监听器时使用事件捕获模式
+        即内部元素触发的事件先在此处理，然后才交由内部元素进行处理
+        示例先输出outter div，再输出inner a
+        -->
+        <div>
+            <label>click.capture事件捕捉: </label>
+            <div v-on:click.capture="alert('outter div')">
+                <a v-on:click="alert('inner a')">inner a</a>
+            </div>
+        </div>
+
+        <!-- 只当在 event.target 是当前元素自身时触发处理函数 -->
+        <!-- 即事件不是从内部元素触发的 -->
+        <div>
+            <label>click.self: </label>
+            <!--内部元素不会出发外部元素事件，点击外部元素div才会出发外部元素事件-->
+            <div v-on:click.self="alert('outter div')"
+                 style="border: 1px solid red; display: inline-block;padding: 10px;">
+                <a v-on:click="alert('inner a')">inner a</a>
+            </div>
+        </div>
+
+        <div>
+            <label>click.once: </label>
+            <a v-on:click.once="alert('只会触发一次!')">only once</a>
+        </div>
+
+        <div>
+            <label>scroll.passive: </label>
+            <!-- 滚动事件的默认行为 (即滚动行为) 将会立即触发 -->
+            <!-- 而不会等待 `onScroll` 完成  -->
+            <!-- 这其中包含 `event.preventDefault()` 的情况 -->
+            <div v-on:scroll.passive="onScroll" class="for-scroll">
+                <p>{{content}}</p>
+            </div>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>按键修饰符</legend>
+
+</fieldset>
+
+<script src="../vue.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            count: 0
+        }
+    });
+
+    var app2 = new Vue({
+        el: '#app2',
+        data: {
+            name: 'vuejs'
+        }, methods: {
+            /*event是js原生事件对象*/
+            greet: function (event) {
+                alert('Hello ' + this.name + "! 点击了：" + event.target.tagName);
+            },
+            greetByObject: function (event) {
+                // 也可以用 JavaScript 直接调用方法
+                app2.greet(event)
+            }
+        }
+    });
+
+    var app3 = new Vue({
+        el: '#app3',
+        data: {}, methods: {
+            say: function (msg) {
+                alert(msg)
+            },
+            warn: function (msg, event) {
+                /*访问原生event对象*/
+                if (event) {
+                    event.preventDefault()
+                }
+                alert(msg);
+            }
+        }
+    })
+
+    var app4 = new Vue({
+        el: '#app4',
+        data: {content: ''},
+        created: function () {
+            let it = setInterval(() => {
+                this.content += Math.random() + '\n';
+            }, 200);
+            setTimeout(() => {
+                clearInterval(it);
+            }, 3000);
+        },
+        methods: {
+            link: function () {
+                window.open("https://belonk.com", "_blank");
+            },
+            onSubmit: function (event) {
+                alert(1);
+            },
+            alert: function (msg) {
+                alert(msg);
+            },
+            onScroll: function () {
+                setTimeout(() => {
+                    console.log('onScroll执行完成！');
+                }, 1000)
+            }
+        }
+    })
+</script>
+</body>
+</html>
