@@ -16,6 +16,7 @@
             overflow: scroll;
         }
     </style>
+    <script src="../vue.js"></script>
 </head>
 <body>
 <!--v-on指令：监听dom事件-->
@@ -26,6 +27,14 @@
         <button v-on:click="count += 1">Add 1</button>
         <p>The button above has been clicked {{ count }} times.</p>
     </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                count: 0
+            }
+        });
+    </script>
 </fieldset>
 
 <fieldset>
@@ -35,6 +44,23 @@
         <button v-on:click="greet">Greet</button>
         <button v-on:click="greetByObject">Greet by vue instance</button>
     </div>
+    <script>
+        var app2 = new Vue({
+            el: '#app2',
+            data: {
+                name: 'vuejs'
+            }, methods: {
+                /*event是js原生事件对象*/
+                greet: function (event) {
+                    alert('Hello ' + this.name + "! 点击了：" + event.target.tagName);
+                },
+                greetByObject: function (event) {
+                    // 也可以用 JavaScript 直接调用方法
+                    app2.greet(event)
+                }
+            }
+        });
+    </script>
 </fieldset>
 
 <fieldset>
@@ -46,6 +72,23 @@
         <!--内联访问原生event对象，使用特殊变量$event传入-->
         <button v-on:click="warn('Form cannot be submitted yet.', $event)">warn</button>
     </div>
+    <script>
+        var app3 = new Vue({
+            el: '#app3',
+            data: {}, methods: {
+                say: function (msg) {
+                    alert(msg)
+                },
+                warn: function (msg, event) {
+                    /*访问原生event对象*/
+                    if (event) {
+                        event.preventDefault()
+                    }
+                    alert(msg);
+                }
+            }
+        })
+    </script>
 </fieldset>
 
 <fieldset>
@@ -130,82 +173,169 @@
             </div>
         </div>
     </div>
+
+    <script>
+        var app4 = new Vue({
+            el: '#app4',
+            data: {content: ''},
+            created: function () {
+                let it = setInterval(() => {
+                    this.content += Math.random() + '\n';
+                }, 200);
+                setTimeout(() => {
+                    clearInterval(it);
+                }, 3000);
+            },
+            methods: {
+                link: function () {
+                    window.open("https://belonk.com", "_blank");
+                },
+                onSubmit: function (event) {
+                    alert(1);
+                },
+                alert: function (msg) {
+                    alert(msg);
+                },
+                onScroll: function () {
+                    setTimeout(() => {
+                        console.log('onScroll执行完成！');
+                    }, 1000)
+                }
+            }
+        })
+    </script>
 </fieldset>
 
 <fieldset>
     <legend>按键修饰符</legend>
+    <!--
+        Vue 允许为 v-on 在监听键盘事件时添加按键修饰符
+    -->
+    <div id="app5">
+        <label>获取keycode：</label>
+        <input v-on:keyup="getKeycode" :value="keycode" placeholder="press a key">
 
+        <!-- 只有在 `key` 是 `Enter` 时调用 `vm.submit()` -->
+        <input v-on:keyup.enter="alert('pressed enter!')" placeholder="press enter">
+
+        <!--处理函数只会在 $event.key 等于 PageDown 时被调用-->
+        <input v-on:keyup.page-down="alert('Pressed PageDown!')" placeholder="press pagedown">
+
+        <!--按键码 keyCode 的事件用法已经被废弃了并可能不会被最新的浏览器支持，但Vue也允许使用 keyCode attribute-->
+        <input v-on:keyup.13="alert('pressed enter by keycode!')" placeholder="press enter by keycode">
+
+        <!--
+        为了在必要的情况下支持旧浏览器，Vue 提供了绝大多数常用的按键码的别名：
+        .enter
+        .tab
+        .delete (捕获“删除”和“退格”键)
+        .esc
+        .space
+        .up
+        .down
+        .left
+        .right
+        -->
+        <input v-on:keyup.esc="alert('pressed esc by alias!')" placeholder="press esc by alias">
+
+        <!--你还可以通过全局 config.keyCodes 对象自定义按键修饰符别名-->
+        <input type="text" v-on:keyup.my-enter="alert('pressed enter by custom alias')"
+               placeholder="press enter by custom alias">
+    </div>
+
+    <script>
+        Vue.config.keyCodes = {
+            // camelCase 不可用
+            myEnter: 13,
+            // 取而代之的是 kebab-case 且用双引号括起来
+            "my-enter": 13,
+        }
+        var app5 = new Vue({
+            el: '#app5',
+            data: {
+                keycode: ''
+            },
+            methods: {
+                alert: function (msg) {
+                    alert(msg);
+                },
+                getKeycode: function (e) {
+                    this.keycode = e.key + " - " + e.keyCode + " - " + e.code;
+                }
+            }
+        });
+    </script>
 </fieldset>
 
-<script src="../vue.js"></script>
-<script>
-    var app = new Vue({
-        el: '#app',
-        data: {
-            count: 0
-        }
-    });
+<fieldset>
+    <legend>系统修饰符</legend>
+    <!--
+        可以用如下修饰符来实现仅在按下相应按键时才触发鼠标或键盘事件的监听器。
+        .ctrl
+        .alt
+        .shift
+        .meta
+    -->
+    <div id="app6">
+        <div>
+            <!-- alt + c -->
+            <input v-on:keyup.alt.67="alert('you pressed alt + c')" placeholder="ALT + C"/>
+            <!-- ctrl + click在mac上冲突，改为alt -->
+            <button v-on:click.alt="alert('you pressed alt + click!')">alt + click</button>
+        </div>
 
-    var app2 = new Vue({
-        el: '#app2',
-        data: {
-            name: 'vuejs'
-        }, methods: {
-            /*event是js原生事件对象*/
-            greet: function (event) {
-                alert('Hello ' + this.name + "! 点击了：" + event.target.tagName);
-            },
-            greetByObject: function (event) {
-                // 也可以用 JavaScript 直接调用方法
-                app2.greet(event)
-            }
-        }
-    });
+        <div>
+            <label>.exact</label>
+            <!--.exact 修饰符允许你控制由精确的系统修饰符组合触发的事件。-->
+            <!-- 即使 ctrl 或 Shift 被一同按下时也会触发 -->
+            <button v-on:click.alt="alert('只要按了alt就能触发，不管是否同时按下其他键')">按下alt和shift/ctrl再点击试试</button>
 
-    var app3 = new Vue({
-        el: '#app3',
-        data: {}, methods: {
-            say: function (msg) {
-                alert(msg)
-            },
-            warn: function (msg, event) {
-                /*访问原生event对象*/
-                if (event) {
-                    event.preventDefault()
+            <!-- 有且只有 alt 被按下的时候才触发 -->
+            <button v-on:click.alt.exact="alert('仅有按了alt才能触发')">仅按下alt再点击试试</button>
+
+            <!-- 没有任何系统修饰符被按下的时候才触发 -->
+            <button v-on:click.exact="alert('没有按下任何修饰键才会被触发')">不要按ctrl/alt/meta/shift点击</button>
+        </div>
+    </div>
+
+    <script>
+        var app6 = new Vue({
+            el: '#app6',
+            data: {},
+            methods: {
+                alert: function (msg) {
+                    alert(msg);
                 }
-                alert(msg);
             }
-        }
-    })
+        });
+    </script>
+</fieldset>
 
-    var app4 = new Vue({
-        el: '#app4',
-        data: {content: ''},
-        created: function () {
-            let it = setInterval(() => {
-                this.content += Math.random() + '\n';
-            }, 200);
-            setTimeout(() => {
-                clearInterval(it);
-            }, 3000);
-        },
-        methods: {
-            link: function () {
-                window.open("https://belonk.com", "_blank");
-            },
-            onSubmit: function (event) {
-                alert(1);
-            },
-            alert: function (msg) {
-                alert(msg);
-            },
-            onScroll: function () {
-                setTimeout(() => {
-                    console.log('onScroll执行完成！');
-                }, 1000)
+<fieldset>
+    <legend>鼠标按钮修饰符</legend>
+    <div id="app7">
+        <!--
+            .left
+            .right
+            .middle
+            这些修饰符会限制处理函数仅响应特定的鼠标按钮。
+        -->
+        <input v-on:click.left="alert('clicked left key of your mouse')" placeholder="click left key">
+        <input v-on:click.middle="alert('clicked middle key of your mouse')" placeholder="click middle key">
+        <!--阻止默认事件-->
+        <input v-on:click.right.prevent="alert('clicked right key of your mouse')" placeholder="click right key">
+    </div>
+    <script>
+        var app7 = new Vue({
+            el: '#app7',
+            data: {},
+            methods: {
+                alert: function (msg) {
+                    alert(msg);
+                }
             }
-        }
-    })
-</script>
+        });
+    </script>
+</fieldset>
 </body>
 </html>
