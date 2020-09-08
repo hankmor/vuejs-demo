@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单输入绑定</title>
+    <style>
+        a {
+            color: blue;
+            text-decoration: underline;
+        }
+
+        fieldset.content {
+            display: inline-block;
+            min-height: 150px;
+            float: left;
+        }
+    </style>
+    <script src="../vue.js"></script>
+</head>
+<body>
+<fieldset>
+    <legend>基础用法</legend>
+    <div id="basic-usage">
+        <!--
+        用 v-model 指令在表单 <input>、<textarea> 及 <select> 元素上创建双向数据绑定；
+        v-model 会忽略所有表单元素的 value、checked、selected attribute 的初始值而总是将 Vue 实例的数据作为数据来源。
+        你应该通过 JavaScript 在组件的 data 选项中声明初始值。
+
+        v-model 在内部为不同的输入元素使用不同的 property 并抛出不同的事件：
+        1. text 和 textarea 元素使用 value property 和 input 事件；
+        2. checkbox 和 radio 使用 checked property 和 change 事件；
+        3. select 字段将 value 作为 prop 并将 change 作为事件。
+
+        对于需要使用输入法 (如中文、日文、韩文等) 的语言，你会发现 v-model 不会在输入法组合文字过程中得到更新。如果你也想处理这个过程，
+        请使用 input 事件。
+        -->
+        <fieldset class="content">
+            <legend>文本</legend>
+            <div>
+                <input v-model="message" placeholder="edit me">
+                <p>Message is: {{ message }}</p>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>多行文本</legend>
+            <div>
+                <p>Message is: {{ message }}</p>
+                <p style="white-space: pre-line;">{{ multiMessage }}</p>
+                <br>
+                <!--在文本区域插值 (<textarea>{{text}}</textarea>) 并不会生效，应用 v-model 来代替。-->
+                <textarea v-model="multiMessage" placeholder="add multiple lines"></textarea>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>复选框</legend>
+            <div>
+                <input type="checkbox" id="checkbox" v-model="checked">
+                <label for="checkbox">{{ checked }}</label>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>同组多个复选框</legend>
+            <div>
+                <!--v-model绑定到数组，将选中的checkbox的value push到数组中-->
+                <input type="checkbox" id="jack" value="Jack" v-model="checkedNames">
+                <label for="jack">Jack</label>
+                <input type="checkbox" id="john" value="John" v-model="checkedNames">
+                <label for="john">John</label>
+                <input type="checkbox" id="mike" value="Mike" v-model="checkedNames">
+                <label for="mike">Mike</label>
+                <br>
+                <span>Checked names: {{ checkedNames }}</span>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>单选按钮</legend>
+            <div>
+                <!--v-model绑定到同一值为一组-->
+                <input type="radio" id="one" value="One" v-model="picked">
+                <label for="one">One</label>
+                <br>
+                <input type="radio" id="two" value="Two" v-model="picked">
+                <label for="two">Two</label>
+                <br>
+                <input type="radio" id="three" value="Three" v-model="picked">
+                <label for="three">Three</label>
+                <br>
+                <span>Picked: {{ picked }}</span>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>下拉选择框</legend>
+            <div>
+                <select v-model="selected">
+                    <!--
+                    如果 v-model 表达式的初始值未能匹配任何选项，<select> 元素将被渲染为“未选中”状态。在 iOS 中，
+                    这会使用户无法选择第一个选项。因为这样的情况下，iOS 不会触发 change 事件。因此，更推荐像下面这样提供
+                    一个值为空的禁用选项。
+
+                    option的value不设置则取文本内容。
+                    -->
+                    <option disabled value="">请选择</option>
+                    <option value="A">A</option>
+                    <option>B</option>
+                    <option>C</option>
+                </select>
+                <br>
+                <span>Selected: {{ selected }}</span>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>多选选择框</legend>
+            <div>
+                <!--多选绑定到一个数组-->
+                <select v-model="multiSelected" multiple style="width: 50px;">
+                    <option>A</option>
+                    <option>B</option>
+                    <option>C</option>
+                </select>
+                <br>
+                <span>Selected: {{ multiSelected }}</span>
+            </div>
+        </fieldset>
+        <fieldset class="content">
+            <legend>动态渲染选择框</legend>
+            <div>
+                <select v-model="selectedItem">
+                    <option v-for="item in items" v-bind:value="item.value">{{item.text}}</option>
+                </select>
+                <br>
+                <span>selected: {{selectedItem}}</span>
+            </div>
+        </fieldset>
+    </div>
+    <script>
+        let basicUsage = new Vue({
+            el: '#basic-usage',
+            data: {
+                message: '',
+                multiMessage: '',
+                checked: false,
+                checkedNames: [],
+                picked: '',
+                selected: '',
+                multiSelected: [],
+                selectedItem: 'A',
+                items: [
+                    {text: 'A', value: 'A'},
+                    {text: 'B', value: 'B'},
+                    {text: 'C', value: 'C'}
+                ]
+            },
+            methods: {}
+        });
+    </script>
+</fieldset>
+</body>
+</html>
