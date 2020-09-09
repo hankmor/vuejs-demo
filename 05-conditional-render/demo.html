@@ -134,7 +134,7 @@
         <!--
         -->
         <h1 v-show="ok">Hello!</h1>
-        <button v-on:click="ok = !ok">切换条件</button>
+        <button v-on:click="ok = !ok">显示切换</button>
         <p class="remark">v-show 的元素始终会被渲染并保留在 DOM 中。v-show 只是简单地切换元素的 CSS property display</p>
         <!--
         v-if 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。

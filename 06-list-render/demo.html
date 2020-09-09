@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>样式绑定</title>
+    <style>
+        .area {
+            width: 100px;
+            height: 50px;
+            border: 1px solid #cccccc;
+            background-color: #cccccc;
+        }
+
+        .active {
+            border: 1px solid green;
+            background-color: green;
+        }
+
+        .text-red {
+            color: red;
+        }
+    </style>
+    <link href="../demo.css" type="text/css" rel="stylesheet">
+    <script src="../vue.js"></script>
+</head>
+<body>
+<fieldset>
+    <legend>用 v-for 把一个数组对应为一组元素</legend>
+    <div id="object">
+        <!--
+        可以用 v-for 指令基于一个数组来渲染一个列表。v-for 指令需要使用 item in items 形式的特殊语法，in可以替换为of，
+        其中 items 是源数据数组， 而 item 则是被迭代的数组元素的别名。
+        -->
+        <label class="block-title">v-for遍历数组元素</label>
+        <ul>
+            <!--key用来指定唯一元素-->
+            <li v-for="item in items" :key="item.message">
+                {{ item.message }}
+            </li>
+        </ul>
+        <label class="block-title">v-for使用index</label>
+        <ul>
+            <!--v-for可以访问所有父作用域的 property-->
+            <li v-for="(item, index) in items">
+                {{ parentMessage }} - {{ index }} - {{ item.message }}
+            </li>
+        </ul>
+    </div>
+    <script>
+        var object = new Vue({
+            el: '#object',
+            data: {
+                parentMessage: 'Parent',
+                items: [
+                    {message: 'Foo'},
+                    {message: 'Bar'}
+                ]
+            }
+        })
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>在 v-for 里使用对象</legend>
+    <div id="demo1">
+        <fieldset class="content">
+            <label class="block-title">对象属性的value</label>
+            <ul>
+                <!--一个参数value 为对象的值-->
+                <li v-for="value in object">
+                    {{ value }}
+                </li>
+            </ul>
+        </fieldset>
+        <fieldset class="content">
+            <label class="block-title">对象属性的name</label>
+            <ul>
+                <!--第二个参数的值为对象的属性key-->
+                <li v-for="(value,name) in object">
+                    {{name }} : {{ value }}
+                </li>
+            </ul>
+        </fieldset>
+        <fieldset class="content">
+            <label class="block-title">对象属性的索引号</label>
+            <ul>
+                <!--第三个参数的值为对象的属性index-->
+                <li v-for="(value,name,index) in object">
+                    {{index}} : {{name }} - {{ value }}
+                </li>
+            </ul>
+        </fieldset>
+
+        <fieldset class="content">
+            <!--
+            为了给 Vue 一个提示，以便它能跟踪每个节点的身份，从而重用和重新排序现有元素，你需要为每项提供一个唯一 key attribute.
+            建议尽可能在使用 v-for 时提供 key attribute，除非遍历输出的 DOM 内容非常简单，或者是刻意依赖默认行为以获取性能上的提升。
+            -->
+            <label class="block-title">v-for指定key属性</label>
+            <ul>
+                <!--第三个参数的值为对象的属性index-->
+                <li v-for="(value,name,index) in object" v-bind:key="'key' + index">
+                    {{index}} : {{name }} - {{ value }}
+                </li>
+            </ul>
+        </fieldset>
+    </div>
+    <script>
+        new Vue({
+            el: '#demo1',
+            data: {
+                object: {
+                    title: 'How to do lists in Vue',
+                    author: 'Jane Doe',
+                    publishedAt: '2016-04-10'
+                }
+            },
+            methods: {}
+        });
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>数组更新监测</legend>
+    <div id="demo2">
+        <!--
+        Vue 将被侦听的数组的变更方法进行了包裹，所以它们也将会触发视图更新。这些被包裹过的方法包括：
+        push()
+        pop()
+        shift()
+        unshift()
+        splice()
+        sort()
+        reverse()
+        你可以打开控制台，然后对前面例子的 items 数组尝试调用变更方法。比如 example1.items.push({ message: 'Baz' })。
+
+        变更方法，顾名思义，会变更调用了这些方法的原始数组。相比之下，也有非变更方法，例如 filter()、concat() 和 slice()。
+        它们不会变更原始数组，而总是返回一个新数组。当使用非变更方法时，可以用新数组替换旧数组
+
+        example1.items = example1.items.filter(function (item) {
+          return item.message.match(/Foo/)
+        })
+        -->
+    </div>
+    <script>
+        new Vue({
+            el: '#demo2',
+            data: {},
+            methods: {}
+        });
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>显示过滤/排序后的结果</legend>
+    <div id="demo3">
+        <fieldset class="content">
+            <!--
+            想要显示一个数组经过过滤或排序后的版本，而不实际变更或重置原始数据。在这种情况下，可以创建一个计算属性，来返回过滤或排序后的数组。
+            -->
+            <label class="block-title">通过属性计算过滤</label>
+            <ul>
+                <li v-for="n in evenNumbers">{{ n }}</li>
+            </ul>
+        </fieldset>
+
+        <fieldset class="content">
+            <label class="block-title">使用方法处理过滤</label>
+            <!--计算属性不适用时，使用方法处理-->
+            <ul v-for="set in sets">
+                <li v-for="n in even(set)">{{ n }}</li>
+            </ul>
+        </fieldset>
+    </div>
+    <script>
+        new Vue({
+            el: '#demo3',
+            data: {
+                numbers: [1, 2, 3, 4, 5],
+                sets: [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+            },
+            computed: {
+                // 计算属性，过滤掉奇数，既保留偶数
+                evenNumbers: function () {
+                    return this.numbers.filter(function (number) {
+                        return number % 2 === 0
+                    })
+                }
+            },
+            methods: {
+                even: function (numbers) {
+                    return numbers.filter(function (number) {
+                        return number % 2 === 0
+                    })
+                }
+            }
+        });
+    </script>
+</fieldset>
+</body>
+</html>
