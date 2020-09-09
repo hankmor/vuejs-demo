@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>样式绑定</title>
+    <style>
+        .area {
+            width: 100px;
+            height: 50px;
+            border: 1px solid #cccccc;
+            background-color: #cccccc;
+        }
+
+        .active {
+            border: 1px solid green;
+            background-color: green;
+        }
+
+        .text-red {
+            color: red;
+        }
+    </style>
+    <link href="../demo.css" type="text/css" rel="stylesheet">
+    <script src="../vue.js"></script>
+</head>
+<body>
+<fieldset>
+    <legend>绑定html class</legend>
+    <fieldset class="content">
+        <legend>对象语法</legend>
+        <div id="object">
+            <!--
+            操作元素的 class 列表和内联样式是数据绑定的一个常见需求。因为它们都是 attribute，所以我们可以用 v-bind 处理它们：
+            只需要通过表达式计算出字符串结果即可。不过，字符串拼接麻烦且易错。因此，在将 v-bind 用于 class 和 style 时，Vue.js
+            做了专门的增强。表达式结果的类型除了字符串之外，还可以是对象或数组。
+            -->
+            <!--v-bind:class 指令也可以与普通的 class attribute 共存-->
+            <!--我们可以传给 v-bind:class 一个对象，以动态地切换 class-->
+            <div class="area" v-bind:class="{ active: isActive, 'text-red': hasError }">
+                {{isActive ? 'actived': 'inactive'}}
+            </div>
+            <button v-on:click="activeDiv">切换样式</button>
+        </div>
+        <script>
+            let object = new Vue({
+                el: '#object',
+                data: {
+                    isActive: false,
+                    hasError: false
+                },
+                methods: {
+                    activeDiv: function () {
+                        this.isActive = !this.isActive;
+                        this.hasError = !this.isActive;
+                    }
+                }
+            });
+        </script>
+    </fieldset>
+    <fieldset class="content">
+        <legend>数组语法</legend>
+        <div id="array">
+            <!--可以把一个数组传给 v-bind:class，以应用一个 class 列表-->
+            <!--        <div v-bind:class="[activeClass, errorClass]"></div>-->
+            <!--        <div v-bind:class="[isActive ? activeClass : '', errorClass]"></div>-->
+            <div class="area" v-bind:class="[{ active: isActive }, errorClass]">
+                {{isActive ? 'actived': 'inactive'}}
+            </div>
+            <button v-on:click="activeDiv">切换样式</button>
+        </div>
+        <script>
+            let vm = new Vue({
+                el: '#array',
+                data: {
+                    isActive: false,
+                    activeClass: 'active',
+                    errorClass: 'text-red'
+                },
+                methods: {
+                    activeDiv: function () {
+                        this.isActive = !this.isActive;
+                        this.hasError = !this.isActive;
+                    }
+                }
+            });
+        </script>
+    </fieldset>
+</fieldset>
+
+<fieldset>
+    <legend>绑定内联样式</legend>
+    <fieldset>
+        <legend>对象语法</legend>
+        <div id="ob-style">
+            <!--直接绑定对象-->
+            <div class="area" v-bind:style="{ color: activeColor, fontSize: fontSize + 'px' }">
+                <p>这个是文字1</p>
+            </div>
+            <!--绑定样式对象更清晰-->
+            <div class="area" v-bind:style="styleObject">
+                <p>这个是文字2</p>
+            </div>
+        </div>
+        <script>
+            let vm1 = new Vue({
+                el: '#ob-style',
+                data: {
+                    activeColor: 'red',
+                    fontSize: 16,
+                    styleObject: {
+                        color: 'red', fontSize: '16px', 'background-color': 'blue'
+                    }
+                },
+                methods: {}
+            });
+        </script>
+    </fieldset>
+    <fieldset>
+        <legend>数组语法</legend>
+        <div id="ar-style">
+            <!--v-bind:style 的数组语法可以将多个样式对象应用到同一个元素上-->
+            <div class="area" v-bind:style="[baseStyles, overridingStyles]">
+                <p>这个是文字1</p>
+            </div>
+        </div>
+        <script>
+            let vm2 = new Vue({
+                el: '#ar-style',
+                data: {
+                    baseStyles: {
+                        color: 'red',
+                        'font-size': '16px'
+                    }, overridingStyles: {
+                        color: 'blue'
+                    }
+                },
+                methods: {}
+            });
+        </script>
+    </fieldset>
+</fieldset>
+</body>
+</html>

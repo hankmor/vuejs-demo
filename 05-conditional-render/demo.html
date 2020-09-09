@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>条件渲染</title>
+    <style>
+
+    </style>
+    <link href="../demo.css" type="text/css" rel="stylesheet">
+    <script src="../vue.js"></script>
+</head>
+<body>
+<fieldset>
+    <legend>v-if条件</legend>
+    <fieldset class="content">
+        <legend>if-else</legend>
+        <div id="demo">
+            <!--
+            v-if 指令用于条件性地渲染一块内容。这块内容只会在指令的表达式返回 truthy 值的时候被渲染
+            -->
+            <h1 v-if="awesome">Vue is awesome!</h1>
+            <h1 v-else>Oh no 😢</h1>
+            <button v-on:click="change">切换条件</button>
+
+            <hr>
+            结果：
+            <span v-if="type === 'A'">
+                A
+            </span>
+            <span v-else-if="type === 'B'">
+                B
+            </span>
+            <span v-else-if="type === 'C'">
+                C
+            </span>
+            <span v-else>
+                Not A/B/C
+            </span>
+            选择：
+            <select v-model="type">
+                <option disabled value="">请选择</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+                <option>其他</option>
+            </select>
+        </div>
+        <script>
+            let demo = new Vue({
+                el: '#demo',
+                data: {awesome: true, type: 'A'},
+                methods: {
+                    change: function () {
+                        this.awesome = !this.awesome;
+                    }
+                }
+            });
+        </script>
+    </fieldset>
+    <fieldset class="content">
+        <legend>在template中使用v-if</legend>
+        <div id="template">
+            <!--
+            因为 v-if 是一个指令，所以必须将它添加到一个元素上。但是如果想切换多个元素呢？此时可以把一个 <template> 元素当做不可见的
+            包裹元素，并在上面使用 v-if。最终的渲染结果将不包含 <template> 元素。
+            -->
+            <template v-if="ok">
+                <h1>Title</h1>
+                <p>Paragraph 1</p>
+                <p>Paragraph 2</p>
+            </template>
+        </div>
+        <script>
+            let template = new Vue({
+                el: '#template',
+                data: {ok: true},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>用 key 管理可复用的元素</legend>
+        <div id="key">
+            <label class="block-title">元素的复用</label>
+            <br>
+            <!--
+           Vue 会尽可能高效地渲染元素，通常会复用已有元素而不是从头开始渲染。这么做除了使 Vue 变得非常快之外，还有其它一些好处:
+           下面的代码中切换 loginType 将不会清除用户已经输入的内容，因为两个模板使用了相同的元素，<input> 不会被替换掉，
+           而仅仅是替换了它的 placeholder。
+            -->
+            <template v-if="loginType === 'username'">
+                <label>Username</label>
+                <input placeholder="Enter your username">
+            </template>
+            <template v-else>
+                <label>Email</label>
+                <input placeholder="Enter your email address">
+            </template>
+            <br>
+            <button v-on:click="loginType = 'username'">邮箱登陆</button>
+            <button v-on:click="loginType = 'email'">用户名登陆</button>
+            <p class="remark">元素复用，导致输入的内容不会清除！</p>
+
+            <label class="block-title">元素的独立</label>
+            <br>
+            <!--Vue 为你提供了一种方式来表达“这两个元素是完全独立的，不要复用它们”。只需添加一个具有唯一值的 key attribute 即可-->
+            <template v-if="loginType1 === 'username'">
+                <label>Username</label>
+                <input placeholder="Enter your username" key="username-input">
+            </template>
+            <template v-else>
+                <label>Email</label>
+                <input placeholder="Enter your email address" key="email-input">
+            </template>
+            <br>
+            <button v-on:click="loginType1 = 'username'">邮箱登陆</button>
+            <button v-on:click="loginType1 = 'email'">用户名登陆</button>
+            <p class="remark">指定了key，元素不会复用，输入的内容会清除，元素重新渲染！</p>
+        </div>
+        <script>
+            new Vue({
+                el: '#key',
+                data: {loginType: 'username', loginType1: 'username'},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+</fieldset>
+
+<fieldset>
+    <legend>v-show</legend>
+    <div id="demo1">
+        <!--
+        -->
+        <h1 v-show="ok">Hello!</h1>
+        <button v-on:click="ok = !ok">切换条件</button>
+        <p class="remark">v-show 的元素始终会被渲染并保留在 DOM 中。v-show 只是简单地切换元素的 CSS property display</p>
+        <!--
+        v-if 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。
+        v-if 也是惰性的：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+        相比之下，v-show 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+        一般来说，v-if 有更高的切换开销，而 v-show 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 v-show 较好；如果在运行时条件很少改变，则使用 v-if 较好。
+        -->
+    </div>
+    <script>
+        let demo1 = new Vue({
+            el: '#demo1',
+            data: {ok: true},
+            methods: {}
+        });
+    </script>
+</fieldset>
+</body>
+</html>
