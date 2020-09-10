@@ -19,6 +19,37 @@
         .text-red {
             color: red;
         }
+
+        .demo-alert-box {
+            padding: 10px 20px;
+            background: #f3beb8;
+            border: 1px solid #f09898;
+        }
+
+        /*动态组件样式*/
+        .tab-button {
+            padding: 6px 10px;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background: #f0f0f0;
+            margin-bottom: -1px;
+            margin-right: -1px;
+        }
+
+        .tab-button:hover {
+            background: #e0e0e0;
+        }
+
+        .tab-button.active {
+            background: #e0e0e0;
+        }
+
+        .tab {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
     </style>
     <link href="../demo.css" type="text/css" rel="stylesheet">
     <script src="../vue.js"></script>
@@ -26,6 +57,349 @@
 <body>
 <fieldset>
     <legend>基本示例</legend>
+    <div id="components-demo">
+        <button-counter></button-counter>
+        <!--组件复用：每个组件都有自己的独立实例，每次点击都维护自己的count-->
+        <button-counter></button-counter>
+        <button-counter></button-counter>
+    </div>
+    <script>
+        /**
+         * 组件是可复用的 Vue 实例，所以它们与 new Vue 接收相同的选项，例如 data、computed、watch、methods 以及生命周期钩子等
+         *
+         * 组件复用：每个组件都会各自独立维护它的属性，因为你每用一次组件，就会有一个它的新实例被创建
+         */
+        // 全局注册一个名为 button-counter 的新组件，可以用来记录点击按钮的次数
+        Vue.component('button-counter', {
+            /*一个组件的 data 选项必须是一个函数，而不能是对象，这样才能保证每个组件实例都持有一份data函数返回的拷贝*/
+            // data: {count: 0}, // error
+            data: function () {
+                return {
+                    count: 0
+                }
+            },
+            // 组件的模板，定义渲染的内容
+            template: '<button v-on:click="count++">You clicked me {{ count }} times.</button>'
+        })
+
+        /*使用组件*/
+        new Vue({el: '#components-demo'})
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>通过props向子组件传递数据</legend>
+    <div id="components-demo1">
+        <!--通过title属性传递给组件数据-->
+        <blog-post title="Vue.js基础入门"></blog-post>
+        <blog-post title="Vue.js高级编程"></blog-post>
+
+        <!--通过v-bind动态给组件传递数据-->
+        <label class="block-title">动态传递title</label>
+        <blog-post v-for="p in posts" v-bind:key="p.id" v-bind:title="p.title"></blog-post>
+    </div>
+    <script>
+        /**
+         * Prop 是你可以在组件上注册的一些自定义 attribute。当一个值传递给一个 prop attribute 的时候，
+         * 它就变成了那个组件实例的一个 property。然后就可以在组件内部访问这些props，方式同访问data。
+         */
+        // 注册一个组件，通过 props 属性传递博文的 title
+        Vue.component('blog-post', {
+            props: ['title'],
+            template: '<h3>{{ title }}</h3>'
+        })
+
+        new Vue({
+            el: '#components-demo1',
+            data: {
+                posts: [
+                    {id: 1, title: '我发布的文章一'},
+                    {id: 2, title: '我发布的文章二'},
+                    {id: 3, title: '我发布的文章三'}
+                ]
+            },
+            methods: {}
+        });
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>组件模板只能包含单个根元素</legend>
+    <div id="components-demo2">
+        <!--直接通过v-bind绑定post对象-->
+        <blog-post v-for="p in posts" v-bind:key="p.id" v-bind:post="p"></blog-post>
+    </div>
+    <script>
+        /**
+         * Vue组件模板中必须只有一个根元素（Component template should contain exactly one root element）
+         */
+        // 定义组件，props定义一个名为post的对象，包含title和content属性
+        Vue.component('blog-post', {
+            props: ['post'],
+            template: '<div><h3>{{ post.title }}</h3><div v-html="post.content"></div></div>'
+        })
+
+        new Vue({
+            el: '#components-demo2',
+            data: {
+                posts: [
+                    {id: 1, title: '我发布的文章一', content: '轻轻地我走了;<br><a>徐志摩——再别康桥</a>'},
+                    {id: 2, title: '我发布的文章二', content: '正如我轻轻地来;<br><a>徐志摩——再别康桥</a>'},
+                    {id: 3, title: '我发布的文章三', content: '我挥一挥衣袖;<br><a>徐志摩——再别康桥</a>'},
+                    {id: 4, title: '我发布的文章四', content: '不带走一片云彩!<br><a>徐志摩——再别康桥</a>'}
+                ]
+            },
+            methods: {}
+        });
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>监听组件事件</legend>
+    <fieldset class="content">
+        <legend>监听事件demo1：组件中监听事件</legend>
+        <div id="blog-posts-events-demo">
+            <div v-bind:style="{ fontSize: postFontSize + 'em' }">
+                <blog-post
+                        v-for="post in posts"
+                        v-bind:key="post.id"
+                        v-bind:post="post"
+                        v-on:enlarger-font="postFontSize += 0.1"
+                ></blog-post>
+            </div>
+        </div>
+        <script>
+            /*定义组件，组件内通过调用内建的 $emit 方法并传入事件名称来触发一个事件*/
+            Vue.component('blog-post', {
+                props: ['post'],
+                template: `
+                    <div class="blog-post">
+                        <h3>{{ post.title }}</h3>
+                        <button v-on:click="$emit('enlarger-font')">放大字体</button>
+                        <div v-html="post.content"></div>
+                    </div>
+                `
+            })
+            new Vue({
+                el: '#blog-posts-events-demo',
+                data: {
+                    postFontSize: 1, // 字体大小
+                    posts: [
+                        {id: 1, title: '我发布的文章一', content: '轻轻地我走了;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 2, title: '我发布的文章二', content: '正如我轻轻地来;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 3, title: '我发布的文章三', content: '我挥一挥衣袖;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 4, title: '我发布的文章四', content: '不带走一片云彩!<br><a>徐志摩——再别康桥</a>'}
+                    ]
+                },
+                methods: {}
+            });
+        </script>
+    </fieldset>
+    <fieldset class="content">
+        <legend>监听事件demo2：事件抛出值</legend>
+        <div id="blog-posts-events-demo1">
+            <!--
+            事件来抛出一个特定的值是非常有用的。例如我们可能想让 <blog-post> 组件决定它的文本要放大多少。
+            这时可以使用 $emit 的第二个参数来提供这个值，然后通过Vue内置变量$event来获取其值
+
+            注意：在组件事件监听中，$event代表事件抛出的值，而在非组件中，$event代表事件处理的DOM原生事件对象。
+            -->
+            <div v-bind:style="{ fontSize: postFontSize + 'em' }">
+                <blog-post
+                        v-for="post in posts"
+                        v-bind:key="post.id"
+                        v-bind:post="post"
+                        v-on:enlarger-font="postFontSize += $event"
+                ></blog-post>
+            </div>
+        </div>
+        <script>
+            /*定义组件，通过 $emit 的第二个参数设置每次点击字体放大的大小，然后通过Vue内置变量$event来获取其值*/
+            Vue.component('blog-post', {
+                props: ['post'],
+                template: `
+                    <div class="blog-post">
+                        <h3>{{ post.title }}</h3>
+                        <button v-on:click="$emit('enlarger-font', 0.1)">放大字体</button>
+                        <div v-html="post.content"></div>
+                    </div>
+                `
+            })
+            new Vue({
+                el: '#blog-posts-events-demo1',
+                data: {
+                    postFontSize: 1, // 字体大小
+                    posts: [
+                        {id: 1, title: '我发布的文章一', content: '轻轻地我走了;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 2, title: '我发布的文章二', content: '正如我轻轻地来;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 3, title: '我发布的文章三', content: '我挥一挥衣袖;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 4, title: '我发布的文章四', content: '不带走一片云彩!<br><a>徐志摩——再别康桥</a>'}
+                    ]
+                },
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>监听事件demo3：事件抛出值，使用事件处理方法接收该值</legend>
+        <div id="blog-posts-events-demo2">
+            <!--
+            事件来抛出一个特定的值是非常有用的。例如我们可能想让 <blog-post> 组件决定它的文本要放大多少。
+            这时可以使用 $emit 的第二个参数来提供这个值，然后通过Vue内置变量$event来获取其值，如果是事件处理方法，会以第一个参数
+            传递到处理方法中。
+
+            注意：在组件事件监听中，$event代表事件抛出的值，而在非组件中，$event代表事件处理的DOM原生事件对象。
+            -->
+            <div v-bind:style="{ fontSize: postFontSize + 'em' }">
+                <blog-post
+                        v-for="post in posts"
+                        v-bind:key="post.id"
+                        v-bind:post="post"
+                        v-on:enlarger-font="enlargerFont"
+                ></blog-post>
+            </div>
+        </div>
+        <script>
+            /*定义组件，通过 $emit 的第二个参数设置每次点击字体放大的大小，然后通过Vue内置变量$event来获取其值*/
+            Vue.component('blog-post', {
+                props: ['post'],
+                template: `
+                    <div class="blog-post">
+                        <h3>{{ post.title }}</h3>
+                        <button v-on:click="$emit('enlarger-font', 0.1)">放大字体</button>
+                        <div v-html="post.content"></div>
+                    </div>
+                `
+            })
+            new Vue({
+                el: '#blog-posts-events-demo2',
+                data: {
+                    postFontSize: 1, // 字体大小
+                    posts: [
+                        {id: 1, title: '我发布的文章一', content: '轻轻地我走了;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 2, title: '我发布的文章二', content: '正如我轻轻地来;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 3, title: '我发布的文章三', content: '我挥一挥衣袖;<br><a>徐志摩——再别康桥</a>'},
+                        {id: 4, title: '我发布的文章四', content: '不带走一片云彩!<br><a>徐志摩——再别康桥</a>'}
+                    ]
+                },
+                methods: {
+                    /*$emit抛出的值，会以第一个参数传递到处理方法中*/
+                    enlargerFont: function (fontStep) {
+                        this.postFontSize += fontStep;
+                    }
+                }
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>监听事件demo3：在组件中使用v-model</legend>
+        <div id="blog-posts-events-demo3">
+            <!--
+            非组件中使用v-model，比如: <input v-model="searchText">，这等价于
+            <input v-bind:value="searchText" v-on:input="searchText = $event.target.value" >，这里的$event代表DOM原生事件对象
+
+            而在组件中,
+            <custom-input v-bind:value="searchText" v-on:input="searchText = $event" ></custom-input>
+            这里的$event代表了事件抛出的值。
+
+            所以，在组件中需要自己事件v-model的监听效果。
+            -->
+            <custom-input v-bind:value="searchText" v-on:input="searchText = $event"></custom-input>
+            <p>搜索关键字：{{searchText}}</p>
+        </div>
+        <script>
+            /**
+             * 定义组件，事件v-model效果，即：
+             * 1、绑定input的value
+             * 2、监听 input 的 input 事件，通过 $emit 的第二个参数抛出值，即当前输入的文本
+             */
+            Vue.component('custom-input', {
+                props: ['value'],
+                template: `
+                    <input v-bind:value="value" v-on:input="$emit('input', $event.target.value)">
+                `
+            })
+            new Vue({
+                el: '#blog-posts-events-demo3',
+                data: {searchText: ''},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+</fieldset>
+
+<fieldset>
+    <legend>通过插槽分发内容</legend>
+    <div id="alert-box">
+        <alert-box>Something bad happened.</alert-box>
+    </div>
+    <script>
+        /**
+         * 使用slot完成渲染，后边详细介绍
+         */
+        Vue.component('alert-box', {
+            template: `
+                <div class="demo-alert-box">
+                  <strong>Error!</strong>
+                  <slot></slot>
+                </div>
+            `
+        })
+        new Vue({
+            el: '#alert-box',
+            data: {},
+            methods: {}
+        });
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>动态组件</legend>
+    <div id="dynamic-component-demo">
+        <button v-for="tab in tabs"
+                v-bind:key="tab"
+                v-bind:class="['tab-button', { active: currentTab === tab }]"
+                v-on:click="currentTab = tab">
+            {{ tab }}
+        </button>
+        <!--
+        通过 Vue 的 <component> 元素加一个特殊的 is attribute 来实现动态切换组件。
+        直接替换组件html，而不是现实和隐藏
+        -->
+        <component v-bind:is="currentTabComponent" class="tab"></component>
+    </div>
+    <script>
+        /**
+         * 有时，需要在不同组件之间进行动态切换
+         */
+        // 定义三个可以动态切换的组件
+        Vue.component("tab-home", {
+            template: "<div>Home component</div>"
+        });
+        Vue.component("tab-posts", {
+            template: "<div>Posts component</div>"
+        });
+        Vue.component("tab-archive", {
+            template: "<div>Archive component</div>"
+        });
+
+        new Vue({
+            el: '#dynamic-component-demo',
+            data: {
+                currentTab: "Home",
+                tabs: ["Home", "Posts", "Archive"]
+            },
+            methods: {},
+            computed: {
+                // 计算属性：currentTabComponent的getter，查询时会调用该方法
+                currentTabComponent: function () {
+                    return "tab-" + this.currentTab.toLowerCase();
+                }
+            }
+        });
+    </script>
 </fieldset>
 </body>
 </html>
