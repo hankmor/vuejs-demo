@@ -12,9 +12,309 @@
 <body>
 <fieldset>
     <legend>组件注册</legend>
-    <div id="component-register">
+    <fieldset class="content">
+        <legend>组件名</legend>
+        <div id="component-register">
+            <!--使用小写加连字符的方式引用组件-->
+            <my-component-name title="标题1"></my-component-name>
+            <!--
+                大写的组件名，DOM引用组件时，只能使用<capital-component-name>，大写的<CapitalComponentName>不能使用
+            -->
+            <!--错误：Unknown custom element: <capitalcomponentname>-->
+            <!--<CapitalComponentName title="标题2"></CapitalComponentName>-->
+            <capital-component-name title="标题2"></capital-component-name>
+        </div>
+        <script>
+            /*第一个参数为组件名称*/
+            // Vue.component('component-name', {});
+            // 组件名大小写
+            Vue.component('my-component-name', {
+                props: ['title'],
+                template: `
+                    <h3>{{title}}</h3>
+                `
+            })
+            // 组件名首字母也可以使用大写，引用时<capital-component-name> 和 <CapitalComponentName>，但是
+            // 在 DOM (即非字符串的模板) 中使用时只有 kebab-case 是有效的，即<capital-component-name>有效，<CapitalComponentName>无效
+            Vue.component('CapitalComponentName', {
+                props: ['title'],
+                template: `
+                    <h3>{{title}}</h3>
+                `
+            })
 
-    </div>
+            new Vue({
+                el: '#component-register',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>全局组件注册</legend>
+        <div id="global-component-register">
+            通过Vue.component全局注册组件
+        </div>
+        <script>
+            /**
+             * 前边注册的组件都是全局注册的：Vue.component，也就是说它们在注册之后可以用在任何新创建的
+             * Vue 根实例 (new Vue) 的模板中。
+             */
+            // Vue.component('component-a', { /* ... */ })
+            // Vue.component('component-b', { /* ... */ })
+            // Vue.component('component-c', { /* ... */ })
+            new Vue({
+                el: '#global-component-register',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>局部组件注册</legend>
+        <div id="part-component-register">
+            <!--前边全局注册的组件，这里可以直接使用-->
+            <capital-component-name title="标题2"></capital-component-name>
+            <component-a title="这个是标题1"></component-a>
+            <component-b title="这个是标题2"></component-b>
+        </div>
+        <div id="part-component-register1">
+            局部注册的组件，新的Vue实例不能使用
+            <!--<component-a title="这个是标题1"></component-a>-->
+        </div>
+        <script>
+            /**
+             * 不想全局注册组件，让所有Vue实例访问和使用，那么可以使用局部注册组件。
+             */
+                // 通过js定义组件
+            var ComponentA = {
+                    props: ['title'],
+                    template: `
+                        <h3>{{title}}</h3>
+                    `
+                }
+            var ComponentB = {
+                props: ['title'],
+                template: `
+                    <h4>{{title}}</h4>
+                `
+            }
+
+            // 引用组件
+            new Vue({
+                el: '#part-component-register',
+                // components来定义当前实例下可访问的组件，key为组件名称，value为组件对应的js对象
+                components: {
+                    'component-a': ComponentA,
+                    'component-b': ComponentB
+                }
+            })
+
+            // 未注册组件
+            new Vue({
+                el: '#part-component-register1',
+                components: {}
+            })
+
+            // 局部注册的组件在其子组件中不可用
+            // 如果你希望 ComponentA 在 ComponentB 中可用，则你需要这样写：
+            /*
+            var AnotherComponentA = {}
+            var AnotherComponentB = {
+                components: {
+                    'another-component-a': AnotherComponentA
+                },
+                // ...
+            }
+            */
+
+            // 通过 Babel 和 webpack 使用 ES2015 模块
+            /*
+            import ComponentA from './ComponentA.vue'
+            export default {
+                components: {
+                    ComponentA // 实际上是 'ComponentA': ComponentA的缩写
+                },
+                // ...
+            }
+            */
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>模块系统</legend>
+        <div id="module">
+            <!--            <component1 content="这是一段话"></component1>-->
+        </div>
+        <script>
+            // TODO 报错：Uncaught SyntaxError: Cannot use import statement outside a module
+            // import component1 from './components/Component1.vue';
+
+            new Vue({
+                el: '#module',
+                data: {},
+                methods: {},
+                components: {
+                    // component1
+                }
+            });
+        </script>
+    </fieldset>
+</fieldset>
+<fieldset>
+    <legend>组件的Prop</legend>
+    <fieldset class="content">
+        <legend>Prop的大小写</legend>
+        <div id="prop-demo1">
+            <!-- 在 HTML 中是 kebab-case 的 -->
+            <blog-post post-title="hello!"></blog-post>
+        </div>
+        <script>
+            /*
+            * HTML 中的 attribute 名是大小写不敏感的，所以浏览器会把所有大写字符解释为小写字符。这意味着当你使用 DOM 中的模板时，
+            * camelCase (驼峰命名法) 的 prop 名需要使用其等价的 kebab-case (短横线分隔命名) 命名
+            */
+            Vue.component('blog-post', {
+                // 在 JavaScript 中是 camelCase 的
+                props: ['postTitle'],
+                template: '<h3>{{ postTitle }}</h3>'
+            })
+            new Vue({
+                el: '#prop-demo1',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+    <fieldset class="content">
+        <legend>Prop的类型</legend>
+        <div id="prop-demo2">
+            <blog-post post-title="hello2!"></blog-post>
+        </div>
+        <script>
+            /*
+            * 以字符串形式列出的prop类型：props: ['title', 'likes', 'isPublished', 'commentIds', 'author']
+            * prop按照类型来定义：props:
+            * {
+                title: String,
+                likes: Number,
+                isPublished: Boolean,
+                commentIds: Array,
+                  author: Object,
+                  callback: Function,
+                  contactsPromise: Promise // or any other constructor
+                }
+            */
+            Vue.component('blog-post', {
+                // 在 JavaScript 中是 camelCase 的
+                props: {
+                    postTitle: String
+                },
+                template: '<h3>{{ postTitle }}</h3>'
+            })
+            new Vue({
+                el: '#prop-demo2',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>传递静态或动态 Prop</legend>
+        <div id="prop-demo3">
+            <label class="block-title">绑定字符串</label>
+
+            <!--静态赋值-->
+            <blog-post title="My journey with Vue"></blog-post>
+
+            <!-- 动态赋予一个变量的值 -->
+            <blog-post v-bind:title="post.title"></blog-post>
+
+            <!-- 动态赋予一个复杂表达式的值 -->
+            <blog-post
+                    v-bind:title="post.title + ' by ' + post.author.name"
+            ></blog-post>
+
+            <label class="block-title">绑定数字</label>
+
+            <!--
+            即便 `42` 是静态的，我们仍然需要 `v-bind` 来告诉 Vue
+            这是一个 JavaScript 表达式而不是一个字符串。
+            -->
+            <blog-post v-bind:likes="42"></blog-post>
+
+            <!-- 用一个变量进行动态赋值。-->
+            <blog-post v-bind:likes="post.likes"></blog-post>
+
+            <label class="block-title">绑定布尔值</label>
+
+            <!-- 包含该 prop 没有值的情况在内，都意味着 `true`-->
+            <blog-post is-published></blog-post>
+
+            <!--
+            即便 `false` 是静态的，我们仍然需要 `v-bind` 来告诉 Vue
+            这是一个 JavaScript 表达式而不是一个字符串。
+            -->
+            <blog-post v-bind:is-published="false"></blog-post>
+
+            <!-- 用一个变量进行动态赋值。-->
+            <blog-post v-bind:is-published="post.isPublished"></blog-post>
+
+            <label class="block-title">绑定对象</label>
+
+            <!-- 即便对象是静态的，我们仍然需要 `v-bind` 来告诉 Vue -->
+            <!-- 这是一个 JavaScript 表达式而不是一个字符串。-->
+            <blog-post
+                    v-bind:author="{
+                        name: 'Veronica',
+                        company: 'Veridian Dynamics'
+                      }"
+            ></blog-post>
+
+            <!-- 用一个变量进行动态赋值。-->
+            <blog-post v-bind:author="post.author"></blog-post>
+        </div>
+        <script>
+            /*
+            *传递静态或动态 Prop
+            */
+            Vue.component('blog-post', {
+                // 在 JavaScript 中是 camelCase 的
+                props: {
+                    title: String,
+                    likes: Number,
+                    isPublished: Boolean,
+                    author: {
+                        name: String,
+                        company: String
+                    }
+                },
+                template: '<div><h3>【{{ title || "暂无标题"}}】<small> 作者：{{author && author.name || "佚名"}}</small><small> 点赞数：{{likes || 0}}</small><small> 是否发布：{{isPublished ? "是": "否"}}</small></h3></div>'
+            })
+            new Vue({
+                el: '#prop-demo3',
+                data: {
+                    post: {
+                        title: '再别康桥',
+                        author: {
+                            name: '徐志摩',
+                            company: '不知道'
+                        },
+                        likes: 88,
+                        isPublished: false
+                    }
+                },
+                methods: {}
+            });
+        </script>
+    </fieldset>
+</fieldset>
+<fieldset>
+    <legend>单向数据流</legend>
+    <div></div>
     <script>
 
     </script>
