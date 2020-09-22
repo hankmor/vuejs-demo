@@ -7,6 +7,8 @@
 
     </style>
     <link href="../demo.css" type="text/css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css"
+          rel="stylesheet">
     <script src="../vue.js"></script>
 </head>
 <body>
@@ -313,11 +315,295 @@
     </fieldset>
 </fieldset>
 <fieldset>
-    <legend>单向数据流</legend>
-    <div></div>
-    <script>
+    <legend>单向数据流和非prop属性</legend>
+    <div id="single-stream">
+        <!--
+        1、other-attr为非prop属性，自动添加到根元素上
+        2、class 和 style 两个属性，dom和template会自动合并，而不是直接替换，这里class="A B"
+        -->
+        <button-counter init-counter="10" other-attr="other-attr" class="B"></button-counter>
 
+        <base-input
+                type="text"
+                label="用户名"
+                required
+                placeholder="Enter your username"
+                v-model="username"
+        ></base-input>
+        <label>输入的名字为：{{username}}</label>
+    </div>
+    <script>
+        Vue.component('button-counter', {
+            name: "counter",
+            props: {
+                initCounter: {
+                    type: String,
+                    default: 0,
+                    // 不能缺少
+                    required: true
+                }
+            },
+            data: function () {
+                return {
+                    // 定义内部counter属性，初始值为props的initCounter的值
+                    counter: this.initCounter
+                }
+            },
+            mounted: function () {
+                /**
+                 * 所有的 prop 都使得其父子 prop 之间形成了一个单向下行绑定：父级 prop 的更新会向下流动到子组件中，但是反过来则不行。
+                 * 这样会防止从子组件意外变更父级组件的状态，从而导致你的应用的数据流向难以理解。额外的，每次父级组件发生变更时，
+                 * 子组件中所有的 prop 都将会刷新为最新的值。这意味着你不应该在一个子组件内部改变 prop。
+                 * 如果你这样做了，Vue 会在浏览器的控制台中发出警告。
+                 */
+                // 更改prop的值, Vue发出警告：[Vue warn]: Avoid mutating a prop directly since the value will be overwritten whenever the parent component re-renders.
+                // Instead, use a data or computed property based on the prop's value. Prop being mutated: "initCounter"
+                // this.initCounter = this.initCounter + 1;
+            },
+            computed: {},
+            method: {},
+            template: `
+                <button v-on:click="counter++" class="A">点击了{{counter}}次按钮</button>
+            `
+        });
+
+        Vue.component('base-input', {
+            // 禁止根元素继承属性
+            inheritAttrs: false,
+            props: ['label', 'value'],
+            template: `
+                <label>
+                    {{ label }}
+                    <input
+                            v-bind="$attrs"
+                            v-bind:value="value"
+                            v-on:input="$emit('input', $event.target.value)"
+                    >
+                </label>
+            `
+        })
+
+        new Vue({
+            el: '#single-stream',
+            data: {username: ''},
+            methods: {}
+        });
     </script>
+</fieldset>
+
+<!--自定义事件-->
+<fieldset>
+    <legend>自定义事件</legend>
+    <div id="custom-event">
+        <label>输入英文：</label><input v-model="value">
+        <label>输出英文：</label>
+        <uppercase @success="success" :text="value"></uppercase>
+    </div>
+    <script>
+        Vue.component('uppercase', {
+            props: ['text'],
+            template: `<span>{{t}}</span>`,
+            computed: {
+                t: function () {
+                    let uc = this.text.toUpperCase();
+                    this.$emit('success', uc);
+                    return uc;
+                }
+            }
+        })
+        new Vue({
+            el: '#custom-event',
+            data: {
+                value: 'abc'
+            },
+            methods: {
+                success(res) {
+                    console.log(this.value + '转换为了：' + res)
+                }
+            }
+        });
+    </script>
+</fieldset>
+
+<fieldset>
+    <legend>插槽</legend>
+    <fieldset class="content">
+        <legend>插槽内容</legend>
+        <div id="slot-content">
+            文本内容插槽：
+            <navigation-link url="http://www.baidu.com">去百度</navigation-link>
+            <br>
+            HTML内容插槽：
+            <navigation-link url="http://www.baidu.com"><i class="fa fa-link"></i>去百度</navigation-link>
+        </div>
+        <script>
+            Vue.component('navigation-link', {
+                props: ['url'],
+                template: `<a :href="url" class="nav-link">
+                    <slot></slot>
+                </a>`,
+                computed: {}
+            })
+            new Vue({
+                el: '#slot-content',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+    <fieldset class="content">
+        <legend>编译作用域</legend>
+        <div id="scope">
+            <navigation-link url="http://www.baidu.com">
+                <!--父级模板里的所有内容都是在父级作用域中编译的；子模板里的所有内容都是在子作用域中编译的。-->
+                <!--这里的name可以访问，在Vue实例中已经定义，但是url在同实例中未定义（navigation-link中定义了，子作用域），为undefined-->
+                去{{name}}，地址为{{url}}
+            </navigation-link>
+        </div>
+        <script>
+            Vue.component('navigation-link', {
+                props: ['url'],
+                template: `<a :href="url" class="nav-link">
+                    <slot></slot>
+                </a>`,
+                computed: {}
+            })
+            new Vue({
+                el: '#scope',
+                data: {
+                    name: '百度'
+                },
+                methods: {}
+            });
+        </script>
+    </fieldset>
+    <fieldset class="content">
+        <legend>后备内容</legend>
+        <div id="reserve-content">
+            默认使用后备内容：
+            <submit-button></submit-button>
+            <br>
+            覆盖后备内容：
+            <submit-button>保存</submit-button>
+        </div>
+        <script>
+            Vue.component('submit-button', {
+                props: [''],
+                template: `
+                    <button>
+                        <slot>提交</slot>
+                    </button>`,
+                computed: {}
+            })
+            new Vue({
+                el: '#reserve-content',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>具名插槽</legend>
+        <div id="slot-name">
+            <!--默认情况下，solt的name属性为default，可以指定name属性以实现渲染不同的插槽-->
+            <base-layout>
+                <!--通过v-slot指令指定渲染的slot，注意v-slot只能用在template上-->
+                <template v-slot:header>
+                    <h1>Here might be a page title</h1>
+                </template>
+
+                <!--这里使用默认的slot，也可以使用template绑定到name为default的slot：v-slot:default-->
+                <p>A paragraph for the main content.</p>
+                <p>And another one.</p>
+
+                <template v-slot:footer>
+                    <p>Here's some contact info</p>
+                </template>
+            </base-layout>
+        </div>
+        <script>
+            Vue.component('base-layout', {
+                props: [''],
+                template: `
+                    <div class="container">
+                        <header>
+                            <slot name="header"></slot>
+                            <hr>
+                        </header>
+                        <main>
+                            <slot></slot>
+                        </main>
+                        <footer>
+                            <hr>
+                            <slot name="footer"></slot>
+                        </footer>
+                    </div>`,
+                computed: {}
+            })
+            new Vue({
+                el: '#slot-name',
+                data: {},
+                methods: {}
+            });
+        </script>
+    </fieldset>
+
+    <fieldset class="content">
+        <legend>作用域插槽</legend>
+        <div id="slot-scope">
+            <current-user :user="user">
+                <!--父级作用域使用带值的 v-slot 来定义我们提供的插槽 prop 的名字-->
+                <template v-slot:default="slotProps">
+                    <!--使用fullname来替换默认值-->
+                    {{slotProps.user.fullname}}
+                </template>
+            </current-user>
+            <br>
+            <!-- 当被提供的内容只有默认插槽时，组件的标签才可以被当作插槽的模板来使用。这样我们就可以把 v-slot 直接用在组件上-->
+            <current-user :user="user" v-slot:default="slotProps">{{slotProps.user.fullname}}</current-user>
+            <br>
+            <!--上边的简写，不带slot 名称，则绑定到默认插槽上-->
+            <current-user :user="user" v-slot="slotProps">{{slotProps.user.firstname}}</current-user>
+            <br>
+            <!--默认插槽的缩写语法不能和具名插槽混用，因为它会导致作用域不明确-->
+            <!-- 无效，会导致警告 -->
+            <!--<current-user v-slot="slotProps">
+                {{ slotProps.user.firstname }}
+                <template v-slot:other="otherSlotProps">
+                    slotProps is NOT available here
+                </template>
+            </current-user>-->
+
+<!--            <current-user v-slot="{user: {fullname:'aaa'}">{{user.fullname}}</current-user>-->
+<!--            <current-user v-slot="{ user }">{{ user.firstname }}</current-user>-->
+            <br>
+        </div>
+        <script>
+            Vue.component('current-user', {
+                props: ['user'],
+                template:
+                <!--不能访问user，需要通过v-bind来绑定插槽prop-->
+                            ` <span>
+                        <!--<slot>{{user.lastname}}</slot>-->
+                        <slot v-bind:user="user">{{user.lastname}}</slot>
+                    </span>`,
+                computed: {}
+            })
+            new Vue({
+                el: '#slot-scope',
+                data: {
+                    user: {
+                        firstname: 'sam',
+                        lastname: 'sune',
+                        fullname: 'sam sune'
+                    }
+                },
+                methods: {},
+                computed: {}
+            });
+        </script>
+    </fieldset>
 </fieldset>
 </body>
 </html>
