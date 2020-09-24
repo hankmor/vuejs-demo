@@ -3,3 +3,7 @@
 /dist/
 /*.js
 /test/unit/coverage/
+
+# 不检查的文件类型
+*.js
+*.vue
