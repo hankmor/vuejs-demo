@@ -2,12 +2,18 @@
   <div id="app">
     <img src="./assets/logo.png">
     <router-view/>
+    <!--3. 使用子组件-->
+    <HelloWorld/>
   </div>
 </template>
 
 <script>
+  // 1. 引入helloworld子组件
+import HelloWorld from './components/HelloWorld'
 export default {
-  name: 'App'
+  name: 'App',
+  // 2. 注册子组件
+  components: {HelloWorld}
 }
 </script>
 
